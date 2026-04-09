@@ -1,0 +1,11 @@
+[project]
+name = "linklight"
+version = "0.1.0"
+description = "Flash a window on beat using Ableton Link"
+requires-python = ">=3.10"
+dependencies = [
+    "aalink",
+    "PyQt6",
+    "qasync",
+    "requests",
+]
