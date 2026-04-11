@@ -3,14 +3,14 @@ STROBE_BASE_ADDR = 1
 
 DEFAULT_HEAD_BRIGHTNESS = 100
 DEFAULT_STROBE_BRIGHTNESS = 10
-DMX_UNIVERSE = 0
+DMX_UNIVERSE = 1
 OLA_HOST = "localhost"
 OLA_PORT = 9090
 
 # Usable pan/tilt range (0-255 DMX values).
 # Adjust these to the physical subset your fixture can actually reach.
-PAN_MIN = 36
-PAN_MAX = 55
+PAN_MIN = 118
+PAN_MAX = 140
 TILT_MIN = 234
 TILT_MAX = 234
 
