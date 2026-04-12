@@ -5,7 +5,7 @@ from __future__ import annotations
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-from config import DEFAULT_HEAD_BRIGHTNESS, DEFAULT_STROBE_BRIGHTNESS
+from config import DEFAULT_HEAD_BRIGHTNESS, DEFAULT_PAR_BRIGHTNESS, DEFAULT_STROBE_BRIGHTNESS
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from fixture import Color, COLOR_NAMES, MovingHead, StrobeLight
+from fixture import Color, COLOR_NAMES, MovingHead, ParGroup, StrobeLight
 from programs import PROGRAM_REGISTRY
 from programs.base import ProgramOptions
 from show_engine import ShowEngine
@@ -29,6 +29,7 @@ class QueuePanel(QWidget):
         self._engine = engine
         self._strobe: StrobeLight | None = None
         self._head: MovingHead | None = None
+        self._pars: ParGroup | None = None
         engine.on_queue_changed.append(self._refresh_queue)
         engine.on_program_changed.append(self._refresh_now_playing)
 
@@ -84,6 +85,26 @@ class QueuePanel(QWidget):
         mover_row.addWidget(self._mover_val)
 
         layout.addLayout(mover_row)
+
+        # -- Par brightness slider ------------------------------------------
+        par_row = QHBoxLayout()
+        par_label = QLabel("Par Brightness:")
+        par_label.setFont(QFont("monospace", 11))
+        par_label.setStyleSheet("color: #cccccc;")
+        par_row.addWidget(par_label)
+
+        self._par_slider = QSlider(Qt.Orientation.Horizontal)
+        self._par_slider.setRange(0, 100)
+        self._par_slider.setValue(DEFAULT_PAR_BRIGHTNESS)
+        self._par_slider.valueChanged.connect(self._set_par_brightness)
+        par_row.addWidget(self._par_slider, stretch=1)
+
+        self._par_val = QLabel(f"{DEFAULT_PAR_BRIGHTNESS}%")
+        self._par_val.setFont(QFont("monospace", 11))
+        self._par_val.setMinimumWidth(44)
+        par_row.addWidget(self._par_val)
+
+        layout.addLayout(par_row)
 
         layout.addSpacing(8)
 
@@ -173,6 +194,11 @@ class QueuePanel(QWidget):
         self._head = head
         self._head.master_brightness = self._mover_slider.value() / 100.0
 
+    def set_pars(self, pars: ParGroup):
+        """Store the par group reference so the slider can control master_brightness."""
+        self._pars = pars
+        self._pars.master_brightness = self._par_slider.value() / 100.0
+
     # -- slots -----------------------------------------------------------
 
     def _toggle_house(self):
@@ -189,6 +215,11 @@ class QueuePanel(QWidget):
         self._mover_val.setText(f"{val}%")
         if self._head is not None:
             self._head.master_brightness = val / 100.0
+
+    def _set_par_brightness(self, val: int):
+        self._par_val.setText(f"{val}%")
+        if self._pars is not None:
+            self._pars.master_brightness = val / 100.0
 
     def _add_to_queue(self):
         name = self._program_combo.currentText()

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 
-from fixture import MovingHead, StrobeLight
+from fixture import MovingHead, ParGroup, StrobeLight
 from programs import HOUSE_PROGRAM_CLASS, PROGRAM_REGISTRY
 from programs.base import ProgramOptions, ShowProgram
 
@@ -94,14 +94,15 @@ class ShowEngine:
 
     # -- tick (called every frame) ---------------------------------------
 
-    def tick(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def tick(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+             beat: float, tempo: float):
         if self.manual_override:
             return
         prog = self.active_program
         if prog is None:
             return
         loop_beat = beat % prog.loop_beats
-        prog.update(head, strobe, loop_beat, tempo)
+        prog.update(head, strobe, pars, loop_beat, tempo)
 
     # -- notifications ---------------------------------------------------
 

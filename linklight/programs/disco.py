@@ -1,7 +1,7 @@
 """Disco — 80s color pans, directional sweeps, disco ball focus, rainbow drift."""
 
 from config import DISCO_BALL_PAN, DISCO_BALL_TILT, SLOW_PAN_SPEED
-from fixture import Color, Gobo, MovingHead, NON_WHITE_COLORS, STATIC_GOBOS, StrobeLight
+from fixture import Color, Gobo, MovingHead, NON_WHITE_COLORS, ParGroup, STATIC_GOBOS, StrobeLight
 from programs.base import ProgramOptions, ShowProgram
 from programs.utils import Sequence, oscillate, pulse, ramp, smooth_pan, step_cycle
 
@@ -33,13 +33,15 @@ class DiscoProgram(ShowProgram):
             (8,  self._theme_buildup),
         ])
 
-    def update(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def update(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+               beat: float, tempo: float):
         handler, local = self.sections.resolve(beat)
-        handler(head, strobe, local, tempo)
+        handler(head, strobe, pars, local, tempo)
 
     # -- sections --------------------------------------------------------
 
-    def _color_pans(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def _color_pans(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                    beat: float, tempo: float):
         """Wide alternating L-R pans, one color per pan, open gobo."""
         head.lamp_on()
         head.gobo = Gobo.BEAM
@@ -51,7 +53,12 @@ class DiscoProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         strobe.brightness = int(50 + 150 * p)
 
-    def _directional_sweep(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _directional_sweep(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                           beat: float, tempo: float):
         """3 pans L-R then 3 pans R-L, one color per pan, dark on reset."""
 
         # shift colors by one to the right
@@ -67,7 +74,12 @@ class DiscoProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         strobe.brightness = int(50 + 150 * p)
 
-    def _ball_focus(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _ball_focus(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                    beat: float, tempo: float):
         """Stationary on disco ball, white open gobo, gentle intensity breathing."""
         head.lamp_on()
         head.speed = 0
@@ -79,8 +91,10 @@ class DiscoProgram(ShowProgram):
         head.dimmer = int(80 + 175 * p)
 
         strobe.off()
+        pars.off()
 
-    def _slow_color_pan(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def _slow_color_pan(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                        beat: float, tempo: float):
         """Single slow L-R sweep over 8 beats, color changes every beat."""
 
         color = step_cycle(beat, 1, NON_WHITE_COLORS)
@@ -103,7 +117,12 @@ class DiscoProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         strobe.brightness = int(50 + 150 * p)
 
-    def _rainbow_pans(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _rainbow_pans(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                      beat: float, tempo: float):
         """Wide pans with one color and gobo per pan, strobe does smooth RGB rainbow."""
         head.lamp_on()
         head.gobo = step_cycle(beat, 2, STATIC_GOBOS)
@@ -117,7 +136,12 @@ class DiscoProgram(ShowProgram):
         strobe.set_rgb(r, g, b)
         strobe.brightness = 255
 
-    def _theme_buildup(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _theme_buildup(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                       beat: float, tempo: float):
         """Wide alternating pans, theme/white per pan, strobe breathes with rising baseline."""
         color = step_cycle(beat, 2, [self.options.theme_color, Color.WHITE])
         
@@ -131,3 +155,7 @@ class DiscoProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         base = int(ramp(beat, 0, 8, 50, 100))
         strobe.brightness = int(base + 150 * p)
+
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)

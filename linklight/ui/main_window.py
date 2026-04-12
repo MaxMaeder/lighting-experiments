@@ -1,6 +1,6 @@
 """Main window: two-column layout combining BeatPanel and QueuePanel."""
 
-from fixture import MovingHead, StrobeLight
+from fixture import MovingHead, ParGroup, StrobeLight
 from show_engine import ShowEngine
 from ui.beat_panel import BeatPanel
 from ui.manual_window import ManualWindow
@@ -40,6 +40,10 @@ class MainWindow(QWidget):
     def set_strobe(self, strobe: StrobeLight):
         """Called from main.py once the strobe is created inside the async loop."""
         self.queue_panel.set_strobe(strobe)
+
+    def set_pars(self, pars: ParGroup):
+        """Called from main.py once the par group is created inside the async loop."""
+        self.queue_panel.set_pars(pars)
 
     def _open_manual(self):
         if self._head is None:

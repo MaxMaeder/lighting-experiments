@@ -4,10 +4,10 @@ import random
 
 from config import DISCO_BALL_PAN, DISCO_BALL_TILT, SLOW_PAN_SPEED
 from fixture import (
-    Color, Effect, Gobo, MovingHead, NON_WHITE_COLORS, STATIC_GOBOS, StrobeLight,
+    Color, Effect, Gobo, MovingHead, NON_WHITE_COLORS, ParGroup, STATIC_GOBOS, StrobeLight,
 )
 from programs.base import ProgramOptions, ShowProgram
-from programs.utils import Sequence, pulse, smooth_pan, step_cycle
+from programs.utils import Sequence, lerp, pulse, smooth_pan, step_cycle
 
 _SETTLE = 1.0
 
@@ -37,9 +37,10 @@ class EdmProgram(ShowProgram):
             (8,  self._ball_color_cycle),
         ])
 
-    def update(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def update(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+               beat: float, tempo: float):
         handler, local = self.sections.resolve(beat)
-        handler(head, strobe, local, tempo)
+        handler(head, strobe, pars, local, tempo)
 
     def _rolling_offset(self, key: str, beat: float, max_offset: int) -> int:
         """Return a random offset that re-rolls each time the section restarts."""
@@ -50,7 +51,8 @@ class EdmProgram(ShowProgram):
 
     # -- sections --------------------------------------------------------
 
-    def _color_pans(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def _color_pans(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                    beat: float, tempo: float):
         """Alternating L-R / R-L smooth pans, color per pan, strobe white pulse.
         First beat is dark to let the color wheel settle on entry."""
         co = self._rolling_offset('color_pan', beat, len(NON_WHITE_COLORS) - 6)
@@ -73,7 +75,12 @@ class EdmProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         strobe.brightness = int(50 + 150 * p)
 
-    def _wall_flash(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _wall_flash(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                    beat: float, tempo: float):
         """2 beats on / 2 beats off.  Mover illuminates a wall position with a
         color and gobo, then goes dark while repositioning.  Gobo and color
         change at the start of each dark phase so the wheels move while
@@ -124,7 +131,12 @@ class EdmProgram(ShowProgram):
         p = pulse(beat, round(beat), 0.15)
         strobe.brightness = int(50 + 150 * p)
 
-    def _effect_arrows_ball(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.strobe_off()
+        pars.set_rgb(strobe.red, strobe.green, strobe.blue)
+        pars.set_dimmer(strobe.brightness)
+
+    def _effect_arrows_ball(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                            beat: float, tempo: float):
         """Strobe runs arrows effect.  Mover on disco ball, white, open gobo,
         flashes every beat with a low baseline between hits.  First beat is
         dark settling."""
@@ -148,7 +160,10 @@ class EdmProgram(ShowProgram):
             head.gobo = Gobo.BEAM if up else Gobo.BEAM_SHAKE
             head.dimmer = 255 if up else 40
 
-    def _beam_shake_sweep(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        pars.off()
+
+    def _beam_shake_sweep(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                          beat: float, tempo: float):
         """Slow single-direction sweep with beam shake, white.
         Strobe runs sine wave effect."""
         strobe.set_effect(Effect.SINE_WAVE)
@@ -171,7 +186,15 @@ class EdmProgram(ShowProgram):
             p = pulse(beat, round(beat), 0.15)
             head.dimmer = int(80 + 175 * p)
 
-    def _effect_pan(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        step = int(beat)
+        par_list = list(pars)
+        for i, par in enumerate(par_list):
+            par.set_color(NON_WHITE_COLORS[(step + i) % len(NON_WHITE_COLORS)])
+            par.dimmer = 255
+            par.strobe_off()
+
+    def _effect_pan(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                    beat: float, tempo: float):
         """Strobe runs color-change-from-center effect.  Mover smooth pans
         independently with open gobo, cycling colors.  First beat is dark
         settling."""
@@ -195,7 +218,22 @@ class EdmProgram(ShowProgram):
             head.color = step_cycle(local, 2, NON_WHITE_COLORS, co)
             smooth_pan(head, local, 2.0, _EFFECT_PAN_STARTS, _EFFECT_PAN_ENDS)
 
-    def _ball_color_cycle(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+        section_len = 9.0
+        t = min(beat / section_len, 1.0)
+        flashes_per_beat = lerp(2.0, 4.0, t)
+        flash_idx = int(beat * flashes_per_beat)
+        par_list = list(pars)
+        chosen = (flash_idx * 2654435761) % len(par_list)
+        for i, par in enumerate(par_list):
+            if i == chosen:
+                par.set_rgb(255, 255, 255)
+                par.dimmer = 255
+            else:
+                par.dimmer = 0
+            par.strobe_off()
+
+    def _ball_color_cycle(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+                          beat: float, tempo: float):
         """Mover on disco ball, color changes every beat.  Strobe off.
         First beat is dark settling."""
         head.lamp_on()
@@ -212,3 +250,4 @@ class EdmProgram(ShowProgram):
             head.dimmer = 255
 
         strobe.off()
+        pars.off()

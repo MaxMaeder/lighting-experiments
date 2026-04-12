@@ -4,7 +4,7 @@ import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from fixture import Color, MovingHead, SOLID_COLORS, StrobeLight
+from fixture import Color, MovingHead, ParGroup, SOLID_COLORS, StrobeLight
 
 
 @dataclass
@@ -22,7 +22,8 @@ class ShowProgram(ABC):
             self.options.theme_color = random.choice(SOLID_COLORS)
 
     @abstractmethod
-    def update(self, head: MovingHead, strobe: StrobeLight, beat: float, tempo: float):
+    def update(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
+               beat: float, tempo: float):
         """Called ~30x/sec.  *beat* is 0 .. loop_beats (fractional, continuous)."""
         ...
 

@@ -4,9 +4,9 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from qasync import QEventLoop
 
-from config import HEAD_BASE_ADDR, STROBE_BASE_ADDR
+from config import HEAD_BASE_ADDR, PAR_BASE_ADDR, STROBE_BASE_ADDR
 from dmx import DmxController
-from fixture import MovingHead, StrobeLight
+from fixture import MovingHead, ParGroup, StrobeLight
 from link_sync import LinkSync
 from show_engine import ShowEngine
 from ui.main_window import MainWindow
@@ -19,11 +19,13 @@ async def run(window: MainWindow, engine: ShowEngine):
     controller = DmxController()
     head = MovingHead(HEAD_BASE_ADDR)
     strobe = StrobeLight(STROBE_BASE_ADDR)
+    pars = ParGroup(PAR_BASE_ADDR)
     head.lamp_on()
     head.dimmer = 255
 
     window.set_head(head)
     window.set_strobe(strobe)
+    window.set_pars(pars)
 
     engine.advance()
 
@@ -33,10 +35,11 @@ async def run(window: MainWindow, engine: ShowEngine):
         if link.poll_song_changed():
             engine.advance()
 
-        engine.tick(head, strobe, info.beat, info.tempo)
+        engine.tick(head, strobe, pars, info.beat, info.tempo)
 
         controller.update(head)
         controller.update(strobe)
+        controller.update(pars)
         await controller.send()
 
         window.beat_panel.update_display(info)

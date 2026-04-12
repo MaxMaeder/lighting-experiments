@@ -11,6 +11,7 @@ from fixture.moving_head import (
     SOLID_COLORS,
     STATIC_GOBOS,
 )
+from fixture.par import ParGroup, ParLight
 from fixture.strobe import COLOR_TO_RGB, Effect, StrobeLight
 
 __all__ = [
@@ -23,6 +24,8 @@ __all__ = [
     "Gobo",
     "MovingHead",
     "NON_WHITE_COLORS",
+    "ParGroup",
+    "ParLight",
     "SOLID_COLORS",
     "STATIC_GOBOS",
     "StrobeLight",
