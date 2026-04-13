@@ -3,7 +3,7 @@
 from config import DISCO_BALL_PAN, DISCO_BALL_TILT, SLOW_PAN_SPEED
 from fixture import Color, Gobo, MovingHead, NON_WHITE_COLORS, ParGroup, STATIC_GOBOS, StrobeLight
 from programs.base import ProgramOptions, ShowProgram
-from programs.utils import Sequence, oscillate, pulse, ramp, smooth_pan, step_cycle
+from programs.utils import Sequence, floor_light, oscillate, pulse, ramp, smooth_pan, step_cycle
 
 _COLOR_PAN_STARTS = [0.05, 0.95, 0.05, 0.95, 0.05, 0.95, 0.05, 0.95]
 _COLOR_PAN_ENDS   = [0.95, 0.05, 0.95, 0.05, 0.95, 0.05, 0.95, 0.05]
@@ -91,7 +91,7 @@ class DiscoProgram(ShowProgram):
         head.dimmer = int(80 + 175 * p)
 
         strobe.off()
-        pars.off()
+        floor_light(pars)
 
     def _slow_color_pan(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
                         beat: float, tempo: float):

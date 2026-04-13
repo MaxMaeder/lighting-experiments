@@ -5,7 +5,7 @@ from __future__ import annotations
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-from config import DEFAULT_HEAD_BRIGHTNESS, DEFAULT_PAR_BRIGHTNESS, DEFAULT_STROBE_BRIGHTNESS
+from config import DEFAULT_FLOOR_BRIGHTNESS, DEFAULT_HEAD_BRIGHTNESS, DEFAULT_PAR_BRIGHTNESS, DEFAULT_STROBE_BRIGHTNESS
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -106,6 +106,26 @@ class QueuePanel(QWidget):
 
         layout.addLayout(par_row)
 
+        # -- Floor brightness slider ----------------------------------------
+        floor_row = QHBoxLayout()
+        floor_label = QLabel("Floor Brightness:")
+        floor_label.setFont(QFont("monospace", 11))
+        floor_label.setStyleSheet("color: #cccccc;")
+        floor_row.addWidget(floor_label)
+
+        self._floor_slider = QSlider(Qt.Orientation.Horizontal)
+        self._floor_slider.setRange(0, 100)
+        self._floor_slider.setValue(DEFAULT_FLOOR_BRIGHTNESS)
+        self._floor_slider.valueChanged.connect(self._set_floor_brightness)
+        floor_row.addWidget(self._floor_slider, stretch=1)
+
+        self._floor_val = QLabel(f"{DEFAULT_FLOOR_BRIGHTNESS}%")
+        self._floor_val.setFont(QFont("monospace", 11))
+        self._floor_val.setMinimumWidth(44)
+        floor_row.addWidget(self._floor_val)
+
+        layout.addLayout(floor_row)
+
         layout.addSpacing(8)
 
         # -- Manual control button ----------------------------------------
@@ -198,6 +218,7 @@ class QueuePanel(QWidget):
         """Store the par group reference so the slider can control master_brightness."""
         self._pars = pars
         self._pars.master_brightness = self._par_slider.value() / 100.0
+        self._pars.floor_brightness = self._floor_slider.value() / 100.0
 
     # -- slots -----------------------------------------------------------
 
@@ -220,6 +241,11 @@ class QueuePanel(QWidget):
         self._par_val.setText(f"{val}%")
         if self._pars is not None:
             self._pars.master_brightness = val / 100.0
+
+    def _set_floor_brightness(self, val: int):
+        self._floor_val.setText(f"{val}%")
+        if self._pars is not None:
+            self._pars.floor_brightness = val / 100.0
 
     def _add_to_queue(self):
         name = self._program_combo.currentText()

@@ -96,6 +96,7 @@ class ParGroup:
 
     def __init__(self, base_addr: int, names: list[str] = PAR_NAMES):
         self.master_brightness: float = 1.0
+        self.floor_brightness: float = 0.3
         self.pars: dict[str, ParLight] = {}
         for i, name in enumerate(names):
             self.pars[name] = ParLight(base_addr + i * NUM_CHANNELS, name)

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from fixture import MovingHead
+    from fixture.par import ParGroup
 
 
 # ---------------------------------------------------------------------------
@@ -90,6 +91,13 @@ def smooth_pan(head: MovingHead, beat: float, glide_beats: float,
 # ---------------------------------------------------------------------------
 # Discrete helpers
 # ---------------------------------------------------------------------------
+
+def floor_light(pars: ParGroup):
+    """Set pars to dim white using the group's floor_brightness level."""
+    pars.strobe_off()
+    pars.set_rgb(255, 255, 255)
+    pars.set_dimmer(int(255 * pars.floor_brightness))
+
 
 def step_cycle(beat: float, period_beats: float, values: list[Any],
                offset: int = 0) -> Any:

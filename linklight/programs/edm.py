@@ -7,7 +7,7 @@ from fixture import (
     Color, Effect, Gobo, MovingHead, NON_WHITE_COLORS, ParGroup, STATIC_GOBOS, StrobeLight,
 )
 from programs.base import ProgramOptions, ShowProgram
-from programs.utils import Sequence, lerp, pulse, smooth_pan, step_cycle
+from programs.utils import Sequence, floor_light, lerp, pulse, smooth_pan, step_cycle
 
 _SETTLE = 1.0
 
@@ -160,7 +160,7 @@ class EdmProgram(ShowProgram):
             head.gobo = Gobo.BEAM if up else Gobo.BEAM_SHAKE
             head.dimmer = 255 if up else 40
 
-        pars.off()
+        floor_light(pars)
 
     def _beam_shake_sweep(self, head: MovingHead, strobe: StrobeLight, pars: ParGroup,
                           beat: float, tempo: float):
@@ -250,4 +250,4 @@ class EdmProgram(ShowProgram):
             head.dimmer = 255
 
         strobe.off()
-        pars.off()
+        floor_light(pars)
