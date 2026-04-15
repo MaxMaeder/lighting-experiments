@@ -1,7 +1,10 @@
-"""House Lights — mover goes home and turns off, strobe solid red."""
+"""House Lights — mover goes home and turns off, strobe and pars solid yellow."""
 
 from fixture import Gobo, MovingHead, ParGroup, StrobeLight
 from programs.base import ProgramOptions, ShowProgram
+
+HOUSE_COLOR_RGB = (255, 100, 0)
+HOUSE_BRIGHTNESS = 60
 
 
 class HouseLightsProgram(ShowProgram):
@@ -17,9 +20,9 @@ class HouseLightsProgram(ShowProgram):
         head.dimmer = 0
 
         strobe.strobe_off()
-        strobe.set_rgb(255, 0, 0)
-        strobe.brightness = 255
+        strobe.set_rgb(*HOUSE_COLOR_RGB)
+        strobe.brightness = HOUSE_BRIGHTNESS
 
         pars.strobe_off()
-        pars.set_rgb(255, 0, 0)
-        pars.set_dimmer(255)
+        pars.set_rgb(*HOUSE_COLOR_RGB)
+        pars.set_dimmer(HOUSE_BRIGHTNESS)

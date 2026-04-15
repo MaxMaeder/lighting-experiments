@@ -122,7 +122,7 @@ class ColorsProgram(ShowProgram):
         head.lamp_on()
         head.gobo = step_cycle(beat, 2, SHAKE_GOBOS)
         head.set_tilt_relative(0.5)
-        head.color = color
+        head.color = Color.WHITE
         smooth_pan(head, beat, 2.0, _FAST_PAN_STARTS, _FAST_PAN_ENDS)
 
         pars.strobe_off()
