@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 
-from fixture import MovingHead, ParGroup, StrobeLight
+from fixture import Color, MovingHead, ParGroup, StrobeLight
 from programs import HOUSE_PROGRAM_CLASS, PROGRAM_REGISTRY
 from programs.base import ProgramOptions, ShowProgram
 
@@ -17,6 +17,8 @@ class ShowEngine:
         self._house_lights = HOUSE_PROGRAM_CLASS(ProgramOptions())
         self._house_active = False
         self.manual_override = False
+        self.flash_override = False
+        self.blackout_override = False
 
         self.on_queue_changed: list[callable] = []
         self.on_program_changed: list[callable] = []
@@ -99,10 +101,29 @@ class ShowEngine:
         if self.manual_override:
             return
         prog = self.active_program
-        if prog is None:
-            return
-        loop_beat = beat % prog.loop_beats
-        prog.update(head, strobe, pars, loop_beat, tempo)
+        if prog is not None:
+            loop_beat = beat % prog.loop_beats
+            prog.update(head, strobe, pars, loop_beat, tempo)
+
+        if self.blackout_override:
+            head.dimmer = 0
+            strobe.brightness = 0
+            pars.set_dimmer(0)
+        elif self.flash_override:       
+            on = int(beat * 8) % 2 == 0
+            head.color = Color.WHITE
+            strobe.set_rgb(255, 255, 255)
+            strobe.strobe_off()
+            pars.set_rgb(255, 255, 255)
+            pars.strobe_off()
+            if on:
+                head.dimmer = 255
+                strobe.brightness = 255
+                pars.set_dimmer(255)
+            else:
+                head.dimmer = 0
+                strobe.brightness = 0
+                pars.set_dimmer(0)
 
     # -- notifications ---------------------------------------------------
 

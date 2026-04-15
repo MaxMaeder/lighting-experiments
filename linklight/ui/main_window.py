@@ -1,12 +1,13 @@
 """Main window: two-column layout combining BeatPanel and QueuePanel."""
 
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtWidgets import QApplication, QHBoxLayout, QWidget
+
 from fixture import MovingHead, ParGroup, StrobeLight
 from show_engine import ShowEngine
 from ui.beat_panel import BeatPanel
 from ui.manual_window import ManualWindow
 from ui.queue_panel import QueuePanel
-
-from PyQt6.QtWidgets import QHBoxLayout, QWidget
 
 
 class MainWindow(QWidget):
@@ -32,6 +33,11 @@ class MainWindow(QWidget):
 
         self.queue_panel.manual_btn.clicked.connect(self._open_manual)
 
+        self._space_held = False
+        self._shift_held = False
+
+        QApplication.instance().installEventFilter(self)
+
     def set_head(self, head: MovingHead):
         """Called from main.py once the head is created inside the async loop."""
         self._head = head
@@ -44,6 +50,31 @@ class MainWindow(QWidget):
     def set_pars(self, pars: ParGroup):
         """Called from main.py once the par group is created inside the async loop."""
         self.queue_panel.set_pars(pars)
+
+    def eventFilter(self, obj, event):
+        changed = False
+        if event.type() == QEvent.Type.KeyPress and not event.isAutoRepeat():
+            if event.key() == Qt.Key.Key_Space:
+                self._space_held = True
+                changed = True
+            elif event.key() == Qt.Key.Key_Shift:
+                self._shift_held = True
+                changed = True
+        elif event.type() == QEvent.Type.KeyRelease and not event.isAutoRepeat():
+            if event.key() == Qt.Key.Key_Space:
+                self._space_held = False
+                changed = True
+            elif event.key() == Qt.Key.Key_Shift:
+                self._shift_held = False
+                changed = True
+
+        if changed:
+            self._engine.flash_override = self._space_held and not self._shift_held
+            self._engine.blackout_override = self._space_held and self._shift_held
+            if event.key() == Qt.Key.Key_Space:
+                return True
+
+        return super().eventFilter(obj, event)
 
     def _open_manual(self):
         if self._head is None:

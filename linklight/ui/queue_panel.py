@@ -134,6 +134,35 @@ class QueuePanel(QWidget):
         self._manual_btn.setMinimumHeight(36)
         layout.addWidget(self._manual_btn)
 
+        layout.addSpacing(8)
+
+        # -- Flash / Blackout buttons (hold to activate) -----------------
+        override_row = QHBoxLayout()
+
+        self._flash_btn = QPushButton("Flash White  [Space]")
+        self._flash_btn.setFont(QFont("monospace", 11))
+        self._flash_btn.setMinimumHeight(40)
+        self._flash_btn.setStyleSheet(
+            "QPushButton { background-color: #333; border: 1px solid #666; }"
+            "QPushButton:pressed { background-color: #fff; color: #000; }"
+        )
+        self._flash_btn.pressed.connect(self._flash_on)
+        self._flash_btn.released.connect(self._flash_off)
+        override_row.addWidget(self._flash_btn)
+
+        self._blackout_btn = QPushButton("Blackout  [Shift+Space]")
+        self._blackout_btn.setFont(QFont("monospace", 11))
+        self._blackout_btn.setMinimumHeight(40)
+        self._blackout_btn.setStyleSheet(
+            "QPushButton { background-color: #333; border: 1px solid #666; }"
+            "QPushButton:pressed { background-color: #000; color: #666; }"
+        )
+        self._blackout_btn.pressed.connect(self._blackout_on)
+        self._blackout_btn.released.connect(self._blackout_off)
+        override_row.addWidget(self._blackout_btn)
+
+        layout.addLayout(override_row)
+
         layout.addSpacing(12)
 
         # -- Now playing -------------------------------------------------
@@ -221,6 +250,18 @@ class QueuePanel(QWidget):
         self._pars.floor_brightness = self._floor_slider.value() / 100.0
 
     # -- slots -----------------------------------------------------------
+
+    def _flash_on(self):
+        self._engine.flash_override = True
+
+    def _flash_off(self):
+        self._engine.flash_override = False
+
+    def _blackout_on(self):
+        self._engine.blackout_override = True
+
+    def _blackout_off(self):
+        self._engine.blackout_override = False
 
     def _toggle_house(self):
         on = self._house_btn.isChecked()
