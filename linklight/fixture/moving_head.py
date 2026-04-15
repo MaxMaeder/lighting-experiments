@@ -76,6 +76,12 @@ STATIC_GOBOS: list[Gobo] = [
     Gobo.PATTERN_5, Gobo.PATTERN_6, Gobo.PATTERN_7, Gobo.PATTERN_8,
 ]
 
+SHAKE_GOBOS: list[Gobo] = [
+    Gobo.PATTERN_1_SHAKE, Gobo.PATTERN_2_SHAKE,
+    Gobo.PATTERN_4_SHAKE, Gobo.PATTERN_5_SHAKE, Gobo.PATTERN_6_SHAKE,
+    Gobo.PATTERN_7_SHAKE, Gobo.PATTERN_8_SHAKE,
+]
+
 
 # ---------------------------------------------------------------------------
 # DMX channel layout

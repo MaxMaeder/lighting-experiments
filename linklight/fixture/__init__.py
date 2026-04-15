@@ -8,6 +8,7 @@ from fixture.moving_head import (
     Gobo,
     MovingHead,
     NON_WHITE_COLORS,
+    SHAKE_GOBOS,
     SOLID_COLORS,
     STATIC_GOBOS,
 )
@@ -26,6 +27,7 @@ __all__ = [
     "NON_WHITE_COLORS",
     "ParGroup",
     "ParLight",
+    "SHAKE_GOBOS",
     "SOLID_COLORS",
     "STATIC_GOBOS",
     "StrobeLight",
